@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "brt_location",
+    "slug": "brt_location",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.oliveirafocs.brt_location"
+    }
+  }
+}
