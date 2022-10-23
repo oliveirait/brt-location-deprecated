@@ -5,14 +5,10 @@ import { Routes } from "./src/routes/index";
 
 
 export default function App() {
-
   return (
     <NativeBaseProvider theme={ THEME }>
-
       <StatusBar barStyle="light-content" translucent />
-
       <Routes />
-      
     </NativeBaseProvider>
   );
 }

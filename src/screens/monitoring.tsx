@@ -1,17 +1,21 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { VStack, HStack, Heading, Box, Button, Divider, Center, Text as NativeText  } from 'native-base';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { VStack, HStack, Heading, IHeadingProps, Button, Center, Box, Divider  } from 'native-base';
 import { Alert } from 'react-native'
-import axios from 'axios';
-import uuid from 'react-native-uuid';
-import { FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { FlatList } from 'react-native'; 
 import { Loading } from '../components/Loading';
 import { HeadLoading } from '../components/HeadLoading'
-import { Toast } from 'react-native-toast-message/lib/src/Toast';
+import axios from 'axios';
+import uuid from 'react-native-uuid';
+import Rgoogle from '../data/services/Rgoogle';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+var KEY_HOUR = '@user-hour'
 
 export function Monitoring( {route} ) {
 
+    const { setItem, getItem } = AsyncStorage 
     const navigation = useNavigation()
     const [len_list, setLenList] = useState(0)
     const [list, setList] = useState([])
@@ -23,9 +27,33 @@ export function Monitoring( {route} ) {
       navigation.goBack()
     }
 
+    async function saveHour () {
+      try {
+        let time = new Date().toLocaleTimeString().slice(0,5)
+        await setItem(KEY_HOUR, time)
+        console.log('Hora salva com sucesso', time)
+      } catch (e) {
+        Alert.alert('Erro de armazenamento', 'Problema ao armazenar a hora')
+      }
+    }
+
+    async function getHour () {
+      try {
+        const value = await getItem(KEY_HOUR)
+        if (value !== null) {
+        }
+      } catch (e) {
+        Alert.alert('Erro de leitura', 'Problema ao obter os dados')
+      }
+    }
+
+    function atualizar_dados() {
+        update_list()
+    }
+
     async function update_list() {
 
-      let baseUrl = 'https://jeap.rio.rj.gov.br/dadosAbertosAPI/v2/transporte/veiculos/brt'
+      var baseUrl = 'https://jeap.rio.rj.gov.br/dadosAbertosAPI/v2/transporte/veiculos/brt'
 
       var dados_brt = await axios.get(baseUrl)
         .then((response) => {
@@ -33,42 +61,40 @@ export function Monitoring( {route} ) {
         })
         .catch((err) => {
           console.log(err)
-          Alert('Falha','Erro ao buscar os dados, verifique sua conexão com a internet.')
+          Alert.alert('Falha','Erro ao buscar os dados, verifique sua conexão com a internet.')
         })
 
       for (var i=0; i < dados_brt.length; i++) {
-        let ponto = distance(dados_brt[i]['latitude'],dados_brt[i]['longitude'])
+        var ponto = distance(dados_brt[i]['latitude'],dados_brt[i]['longitude'])
 
-        if (ponto < 1.0) {
+        if (ponto <= 1.0) {
 
           dados_brt[i]['id'] = String(uuid.v4())
           dados_brt[i]['pos_estacao'] = `${pos_estacao}`
           dados_brt[i]['pos_onibus'] = `${dados_brt[i]['latitude']},${dados_brt[i]['longitude']}`
-
-          var dados_google = await axios.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${dados_brt[i]['pos_onibus']}&destination=${dados_brt[i]['pos_estacao']}&key=AIzaSyBLSCj-HzdlrCOLcBdi_N27PB72N8P87VQ`)
-            .then(resp => {
-              let dist = resp.data
-              return dist
-            })
-          dados_brt[i]['tempo'] = dados_google["routes"][0]["legs"][0]["duration"]["text"]
           dados_brt[i]['distancia'] = ponto.toFixed([2]) * 1000
+
+          var dados_google = await Rgoogle(dados_brt[i]['pos_onibus'], dados_brt[i]['pos_estacao'])
+          dados_brt[i]['tempo'] = dados_google["routes"][0]["legs"][0]["duration"]["text"]
+
           lista.push(dados_brt[i])
           }
         }
 
         lista.forEach( temp => {
-          var iti = temp['nomeItinerario'].split(' ')
+          var itinerario = temp['nomeItinerario'].split(' ')
           var destino = temp['nomeLinha'].split(' X ')
-          if (iti[0] !== 'IDA'){
+
+          if (itinerario[0] !== 'IDA'){
             temp['sentido'] = destino[0]
           } else {
             temp['sentido'] = destino[1]
           }
-        } )
+        })
 
       setLenList(lista.length)
       setList(lista)
-      //console.log(lista[0])
+      saveHour()
     }
 
     function distance(lat2: any, long2: any) {
@@ -79,104 +105,108 @@ export function Monitoring( {route} ) {
       return ResultantDistance['kilometers']
     }
 
-
     useEffect(() => {
       update_list()
     }, [])
 
-    async function hour() {
+    function Iour() {
         setInterval(() => {
             //setRelogio(new Date().toLocaleTimeString())
-        }, 1000)
+        }, 60000)
+    }
+
+    function HeadingText ( {data}: any) {
+      return(
+          <Heading size="sm" textAlign='center' fontWeight='normal' color={'green.400'}>
+            {data}
+          </Heading>
+      )
     }
 
   return(
+    <VStack flex={1} w='100%' bg='gray.600' pt={20} >
 
-    <VStack flex={1} w='100%' bg='white'  >
-
-        <HStack justifyContent='center'alignItems='center' bg='white'>
-            <Box px="4" pt="4" >
-                <Heading textAlign='center' color='blue.700' fontSize={40} fontWeight='bold'>
-
-                </Heading>
-            </Box>
-        </HStack>
-
-        <HStack justifyContent='center' alignItems='flex-start' pt={5} pb={4} px={6} bg='gray.500' borderTopRadius={20}>
-          <VStack>
-            <Heading textAlign='center' color='gray.100' fontSize={40} >
+        <HStack justifyContent='center' alignItems='center'
+          pt={6} pb={4} bg='gray.400' borderRadius={20}
+          borderWidth={1} borderColor='amber.400'>
+          <Box>
+            <Heading textAlign='center' color='white' fontSize={40} >
                 { station_name }
             </Heading>
-          </VStack>
+          </Box>
         </HStack>
 
-        <HStack justifyContent='center' alignItems='flex-start' mt={4} bg='white' >
-
-        </HStack>
-
-        <HStack justifyContent='space-between' alignItems='center' pt={2} pb={1} px={12} bg='white' >
-          <Heading textAlign='center' color='blue.700' fontSize={25} >
-           VEÍCULOS PRÓXIMOS
+        <HStack justifyContent='center' alignItems='center' pt={2} pb={1} bg='gray.600' space={5} >
+          <Heading textAlign='center' color='gray.200' fontSize={25} >
+            VEÍCULOS PRÓXIMOS
           </Heading>
-          <Heading textAlign='center' color='blue.700' fontSize={30} >
+          <Heading textAlign='center' color='gray.200' fontSize={25} >
             { len_list != 0 ? len_list : <Loading /> }
           </Heading>
         </HStack>
 
-      <HStack justifyContent='center' alignItems='center' pt={1} pb={1} bg='white'>
-        <VStack flex={1} divider={<Divider />} justifyContent='center' alignItems='center' px={6} bg='white'>
-          <Box px="1" >
-            <Heading  textAlign={'center'} color='blue.700' fontSize={10} >
-               {/* Em { Math.round(estimativa) } minutos */}
-            </Heading>
-          </Box>
-        </VStack>
-      </HStack>
+        <VStack flex={1} h='100%' w='100%' mb={1} pt={2} pb={1} bg='gray.400' 
+          borderWidth={1} borderColor='amber.400' borderTopRadius={20} >
 
+          <FlatList 
+              showsVerticalScrollIndicator={true}
+              data={list}
+              ListEmptyComponent={ <HeadLoading />}
+              keyExtractor={ (item) => String(item.id) }
+              renderItem={ ({item}) =>
 
-    <VStack h='100%' w='100%' mb={1} pt={3} flex={1}  bg='gray.400' borderRadius={20}>
+              <Button size="xs" variant="outline" bg={'cyan.900'}
+                m={3}  borderColor='blue.300' borderRadius={20} alignItems='center' justifyContent='flex-start'>
 
-     <FlatList borderBottomRadius={'md'}
-        showsVerticalScrollIndicator={true}
-        data={list}
-        ListEmptyComponent={ <HeadLoading />}
-        keyExtractor={ (item) => String(item.id) }
-        renderItem={ ({item}) =>
+                <VStack  >
+                  <Box >
+                    <Heading size="sm" textAlign='left' color='white' fontWeight='normal' >
+                      { item['nomeLinha'] }
+                    </Heading>
+                    <Divider my={1} bg={'gray.300'}/>
+                  </Box>
+                
+                  <Box >
+                  
+                      <HStack  alignItems='center' justifyContent='flex-start' space={2}>
+                        <Heading  size="sm" textAlign='left' color='amber.400' fontWeight='normal' >
+                          LINHA 
+                        </Heading>
+                        <Divider orientation='vertical' bg={'gray.300'}/>
+                        <HeadingText data={ item['linha'] } />
+                      </HStack>
 
-        <Button size="sm" variant="outline" colorScheme="primary" m={2}>
+                      <HStack alignItems='center' justifyContent='flex-start' space={2} >
+                        <Heading  size="sm" textAlign='left' color='amber.400' fontWeight='normal' >
+                          SENTIDO 
+                        </Heading>
+                        <Divider orientation='vertical' bg={'gray.300'}/>
+                        <HeadingText data={ item['sentido'] }  />
+                      </HStack>
 
-           <VStack flex={1} justifyContent='space-between' alignItems='center' >
-             <NativeText  color='amber.400' fontWeight='bold' fontSize={1} pt={5} m={1} >
-                 <Heading textAlign='right' color='white' >
-                   { item['nomeLinha'] } {'\n'}
-                 </Heading>
+                      <HStack alignItems='center' justifyContent='flex-start' space={2}>
+                        <Heading  size="sm" textAlign='left' color='amber.400' fontWeight='normal' >
+                          ESTIMATIVA 
+                        </Heading>
+                        <Divider orientation='vertical' bg={'gray.300'} />
+                        <HeadingText data={ item['tempo'] } /> 
+                      </HStack>
+                  </Box>
 
+                  </VStack>
+                </Button> } /> 
+        </VStack> 
 
-                 <Heading textAlign='center' color='amber.400'  >
-                  LINHA              <Heading textAlign='center' color='blue.300' >
-                                        {item['linha']} {'\n'}
-                                      </Heading>
-                  SENTIDO        <Heading textAlign='center' color='blue.300' >
-                                  { item['sentido'] } {'\n'}
-                                  </Heading>
-                  ESTIMATIVA <Heading textAlign='center' color='blue.300' >
-                              { item['tempo'] }
-                            </Heading>
-
-                 </Heading>
-             </NativeText>
-           </VStack>
-
-        </Button>}
-      />
-
-    </VStack>
-
-        <HStack justifyContent='space-between' m={5}  px={2} >
-          <Button onPress={ handleGoBack } w='full' flex={1} mr={2} size={14} variant='solid' color='secondary'>
+        <HStack  justifyContent='center' mb={8} m={4}
+          borderBottomRadius={20} borderColor={'white'} space={4}> 
+          <Button onPress={ handleGoBack }
+             flex={1} size={12} variant='solid' color='secondary'
+            borderWidth={1} borderColor='blue.200' >
             <Heading color='white' size={'md'}> VOLTAR </Heading>
           </Button>
-          <Button onPress={ update_list }  w='full' flex={1} ml={6} size={14} variant='solid' color='secondary' >
+          <Button onPress={ atualizar_dados }
+             flex={1} size={12} variant='solid' color='secondary'
+            borderWidth={1} borderColor='blue.200'>
             <Heading color='white' size={'md'}> ATUALIZAR </Heading>
           </Button>
         </HStack>

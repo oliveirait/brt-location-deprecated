@@ -7,15 +7,18 @@ export function Input( {...rest} : IInputProps ) {
             bg='gray.700'
             h={14}
             size='2xl'
-            borderWidth={0}
+            borderWidth={1}
             fontFamily='body'
             color='white'
             placeholderTextColor='gray.300'
             placeholder='Nome da estação'
+            borderColor='amber.500'
             _focus={{
-                borderWidth: 1,
-                borderColor: 'amber.500',
-                backgroundColor: 'gray.700',
+                borderWidth: 2,
+                borderColor: 'blue.400',
+                backgroundColor: 'white',
+                color: 'black'
+
             }}
             {...rest}>
 

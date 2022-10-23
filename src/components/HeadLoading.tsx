@@ -1,9 +1,11 @@
-import {  HStack, Heading } from 'native-base';
+import {  VStack, Heading } from 'native-base';
 
-export function HeadLoading(  ) {
+export function HeadLoading() {
   return (
-    <HStack space={2} justifyContent="center">
-      <Heading textAlign='center' color='blue.400' fontSize={30}> Procurando veículos... </Heading>
-    </HStack>
+    <VStack justifyContent="center" alignItems='center' pt={5}>
+        <Heading textAlign='center' color='blue.400' fontSize={20} fontWeight='normal'> 
+          Não há itens para exibir 
+        </Heading>
+    </VStack>
   );
 }
