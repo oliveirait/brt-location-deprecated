@@ -6,10 +6,9 @@ const { Navigator, Screen } = createNativeStackNavigator();
 
 export function AppRoutes( ) {
   return (
-      <Navigator screenOptions={ {headerShown: false} }>
+      <Navigator screenOptions={ {headerShown: false, orientation: 'portrait' }  }>
         <Screen name="home" component={Home}/>
-        <Screen name="monitoring" component={Monitoring}/>
+        <Screen name="monitoring" component={Monitoring}  />
       </Navigator>
-
   );
 }

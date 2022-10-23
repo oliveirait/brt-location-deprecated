@@ -151,12 +151,12 @@ export function Monitoring( {route} ) {
           <FlatList 
               showsVerticalScrollIndicator={true}
               data={list}
-              ListEmptyComponent={ <HeadLoading />}
+              ListEmptyComponent={ <HeadLoading /> }
               keyExtractor={ (item) => String(item.id) }
               renderItem={ ({item}) =>
 
               <Button size="xs" variant="outline" bg={'cyan.900'}
-                m={3}  borderColor='blue.300' borderRadius={20} alignItems='center' justifyContent='flex-start'>
+                m={3} borderColor='blue.300' borderRadius={20} alignItems='center' justifyContent='flex-start'>
 
                 <VStack  >
                   <Box >
@@ -194,18 +194,18 @@ export function Monitoring( {route} ) {
                   </Box>
 
                   </VStack>
-                </Button> } /> 
+                </Button> } />
         </VStack> 
 
-        <HStack  justifyContent='center' mb={8} m={4}
+        <HStack justifyContent='center' mb={4} m={3}
           borderBottomRadius={20} borderColor={'white'} space={4}> 
           <Button onPress={ handleGoBack }
-             flex={1} size={12} variant='solid' color='secondary'
+            flex={1} size={12} bg={'cyan.900'}
             borderWidth={1} borderColor='blue.200' >
             <Heading color='white' size={'md'}> VOLTAR </Heading>
           </Button>
           <Button onPress={ atualizar_dados }
-             flex={1} size={12} variant='solid' color='secondary'
+            flex={1} size={12} bg={'cyan.900'}
             borderWidth={1} borderColor='blue.200'>
             <Heading color='white' size={'md'}> ATUALIZAR </Heading>
           </Button>
