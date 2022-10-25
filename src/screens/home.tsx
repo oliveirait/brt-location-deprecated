@@ -6,6 +6,7 @@ import {
   Center,
   Button,
   Box,
+  useToast,
   Text as NativeText } from 'native-base';
 import React, { useCallback, useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
@@ -22,6 +23,7 @@ export function Home() {
   const data = stations
   const [searchText, setSearchText] = useState('')
   const [list, setList] = useState(data)
+  const toast = useToast()
 
   function handleNextPage(start_lat: any, end_long: any, station_name: any) {
     navigation.navigate(
@@ -46,6 +48,21 @@ export function Home() {
       )
     }
   },[searchText])
+
+  useEffect(() => {
+    toast.show({ 
+      placement: 'top',
+      render: () => {
+        return(
+          <Box bg="cyan.600" p={1} >
+            <Heading textAlign='center' color='white' fontSize={20} w='full'>
+            ﾠﾠﾠﾠﾠﾠﾠﾠﾠﾠSeja bem vindo(a) !ﾠﾠﾠﾠﾠﾠﾠﾠﾠﾠ
+            </Heading>
+          </Box>
+        )
+      }
+    })
+  }, [])
 
   useFocusEffect(
       useCallback( () => {

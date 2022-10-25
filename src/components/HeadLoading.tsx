@@ -1,11 +1,13 @@
-import {  VStack, Heading } from 'native-base';
+import {  VStack, Heading, Badge } from 'native-base';
 
 export function HeadLoading() {
   return (
-    <VStack justifyContent="center" alignItems='center' pt={5}>
-        <Heading textAlign='center' color='blue.400' fontSize={20} fontWeight='normal'> 
-          Não há itens para exibir 
+    <VStack justifyContent="center" alignItems='center' pt={20}>
+        <Heading textAlign='center' color='blue.400' fontSize={25} fontWeight='normal'> 
+              Sem novos itens...
         </Heading>
     </VStack>
   );
 }
+
+
